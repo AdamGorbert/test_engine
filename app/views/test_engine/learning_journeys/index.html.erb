@@ -1,0 +1,23 @@
+<h1>Listing learning_journeys</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @learning_journeys.each do |learning_journey| %>
+      <tr>
+        <td><%= link_to 'Show', learning_journey %></td>
+        <td><%= link_to 'Edit', edit_learning_journey_path(learning_journey) %></td>
+        <td><%= link_to 'Destroy', learning_journey, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Learning journey', new_learning_journey_path %>

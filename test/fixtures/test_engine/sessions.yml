@@ -1,0 +1,21 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  workflow_state: MyString
+  ordinal: 1
+  type: 
+  has_duration: false
+  has_module: false
+  program_module_id: 
+  duration_id: 
+  learning_journey_id: 
+
+two:
+  workflow_state: MyString
+  ordinal: 1
+  type: 
+  has_duration: false
+  has_module: false
+  program_module_id: 
+  duration_id: 
+  learning_journey_id: 

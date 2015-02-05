@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  minutes: MyString
+  type: 
+  learning_journey_id: 
+
+two:
+  minutes: MyString
+  type: 
+  learning_journey_id: 

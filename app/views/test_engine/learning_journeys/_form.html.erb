@@ -1,0 +1,17 @@
+<%= form_for(@learning_journey) do |f| %>
+  <% if @learning_journey.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@learning_journey.errors.count, "error") %> prohibited this learning_journey from being saved:</h2>
+
+      <ul>
+      <% @learning_journey.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

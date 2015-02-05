@@ -1,0 +1,227 @@
+<p id="notice"><%= notice %></p>
+<p>
+  <%= link_to 'Edit', edit_learning_journey_path(@learning_journey) %> |
+  <%= link_to 'Back', learning_journeys_path %>
+
+</p>
+
+<style media="screen">
+  fieldset.fixed{
+    background-color:darkgray;
+  }
+
+  .session{
+    height:150px;
+  }
+  fieldset.bookable{
+    background-color: lightblue;
+  }
+  fieldset.bookable.fixed{
+    background-color: #778899;
+  }
+  .module{
+    height:50px;
+    width:50px;
+    background-color:lightgray;
+    padding: 20px;
+    margin:20px;
+    text-align:center;
+    float:left;
+  }
+  .dragging{
+    z-index: 10;
+  }
+
+  .duration{
+    height:50px;
+    width:50px;
+    padding: 20px;
+    margin:20px;
+    text-align:center;
+    float:left;
+  }
+
+  .Call{
+    background-color:orange;
+  }
+  .FaceToFace{
+    background-color:gold;
+  }
+
+  .sessionduration{
+    height:75px;
+    width:75px;
+    background-color:orange;
+    padding: 5;
+    margin:5px;
+
+
+  }
+
+  .sessionmodule{
+    height:75px;
+    width:75px;
+    background-color:lightgray;
+    padding: 5;
+    margin:5px;
+    text-align:center;
+
+  }
+div span { display: none; color: #FFFFFF; }
+div:hover:not(.ui-draggable-dragging) span { display: block; position: absolute; background: #aaa; color: #FFFFFF;}
+
+
+</style>
+
+<script>
+<% if @user == "coach" %>
+$(function() {
+  $( ".module_draggable" ).draggable({ revert: true, revertDuration: 0});
+  $( ".duration_draggable" ).draggable({ revert: "invalid", revertDuration: 0 }); 
+  $( ".droppable" ).droppable({
+    drop: function( event, ui ) {
+      if (typeof ui.draggable[0].attributes["data-item-id"] !== 'undefined') {
+        if ($(this).hasClass("durations")){
+          data_item = ui.draggable
+          data_item_id = data_item[0].attributes["data-item-id"].value;
+          if(ui.draggable[0].attributes["class"].value.indexOf("duration") >= 0){
+            $.ajax({
+              url: "/test_engine/link/duration",
+              data: {session_id: null, duration_id: data_item_id}
+            }).success(function() {
+              data_item.parent().removeClass("bookable")
+              $(".durations").append(data_item[0]);
+              ui.draggable.css('top','');
+              ui.draggable.css('left','');
+              ui.draggable.css('float','');
+            })
+          }
+        }
+        else if ($(this).hasClass("modules")){
+          data_item = ui.draggable
+          data_item_id = data_item[0].attributes["data-item-id"].value;
+          if(ui.draggable[0].attributes["class"].value.indexOf("module") >= 0){
+            $.ajax({
+              url: "/test_engine/link/program_module",
+              data: {session_id: data_item.parent()[0].id, program_module_id: null}
+            }).success(function() {
+              data_item[0].remove();
+              ui.draggable.css('top','');
+              ui.draggable.css('left','');
+              ui.draggable.css('float','');
+            })
+          }
+        }
+        else {
+          session_tag = $(this)
+          data_item = ui.draggable
+          sessionid = session_tag[0].id;
+          data_item_id = data_item[0].attributes["data-item-id"].value;
+          if(ui.draggable[0].attributes["class"].value.indexOf("duration") >= 0){
+            $.ajax({
+              url: "/test_engine/link/duration",
+              data: {session_id: sessionid, duration_id: data_item_id}
+            }).success(function() {
+              dur = session_tag.children(".duration");
+              dur.css('top','')
+              dur.css('left','')
+              dur.css('float','')
+              $(".durations").append(dur[0]);
+              data_item.parent().removeClass("bookable")
+              session_tag.removeClass("bookable")
+              session_tag.append(data_item[0]);
+              if(data_item[0].attributes["class"].value.indexOf("Call") >= 0){
+                session_tag.addClass("bookable");
+              }
+              ui.draggable.css('top','');
+              ui.draggable.css('left','');
+              ui.draggable.css('float','');
+            });
+          }else if(ui.draggable[0].attributes["class"].value.indexOf("module") >= 0){
+            $.ajax({
+              url: "/test_engine/link/program_module",
+              data: {session_id: sessionid, program_module_id: data_item_id}
+            }).success(function() {
+              if (typeof session_tag.children(".module")[0] !== 'undefined') 
+                session_tag.children(".module")[0].remove()
+              cl = data_item.clone();
+              cl.draggable({ revert: true, revertDuration: 0});
+              session_tag.prepend(cl[0]);
+              cl.css('top','');
+              cl.css('left','');
+              cl.css('float','');
+            });
+          }
+        }
+      }
+    }
+  });
+});
+<% end %>
+</script>
+
+
+<fieldset>
+    <legend>Sessions </legend>
+    <% @learning_journey.sessions.order(:ordinal).each do |session| %>
+      <% if session.is_a? TestEngine::FixedSession %>
+
+        <fieldset class="<%= 'fixed' if session.type == "TestEngine::FixedSession"  %> session <%= 'bookable' if session.bookable?  %>" id=<%= session.id %>>
+      <% else %>
+      <li id=<%= session.id %>>
+        <fieldset class="session droppable <%= 'bookable' if session.bookable?  %>" id=<%= session.id %>>
+      <% end %>
+          <legend>Session <%= session.ordinal %></legend>
+          <% if session.program_module %>
+            <div class="module <%= 'module_draggable' unless session.type == "TestEngine::FixedSession"  %>" data-item-id='<%= "#{session.program_module.id}" %>'>
+              <p>
+                <%= session.program_module.title %>
+              </p>
+              <span>
+                <%= session.program_module.description %>      
+              </span>
+            </div>
+          <% end %>
+
+          <% if session.duration %>
+            <div class="duration  <%= session.duration.type.split("::")[1] %> <%= 'duration_draggable' unless session.type == "TestEngine::FixedSession"  %>" data-item-id='<%= "#{session.duration.id}" %>'>
+              <p>
+                <%= session.duration.minutes %>
+                <%= session.duration.type.split("::")[1] %>
+              </p>
+            </div>
+          <% end %>
+        </fieldset>
+        <br/>
+      <% end %>
+</fieldset>
+<br>
+
+<fieldset class="modules droppable">
+  <legend>Modules</legend>
+<% @learning_journey.program_modules.each do |program_module| %>
+  <div class="module module_draggable" data-item-id='<%= "#{program_module.id}" %>' >
+    <p>
+      <%= program_module.title %>
+    </p>
+    <span>
+      <%= program_module.description %>      
+    </span>
+  </div>
+<% end %>
+</fieldset>
+<br/>
+
+<fieldset class="durations droppable">
+  <legend>Durations</legend>
+<% @learning_journey.durations.each do |duration| %>
+  <% unless duration.session %>
+    <div class="duration duration_draggable <%= duration.type.split("::")[1] %>" data-item-id='<%= "#{duration.id}" %>'>
+      <p>
+        <%= duration.minutes %>
+        <%= duration.type.split("::")[1] %>
+      </p>
+    </div>
+  <% end %>
+<% end %>
+</fieldset>
